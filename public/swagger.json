@@ -1,0 +1,351 @@
+{
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"PingResponse": {
+				"properties": {
+					"message": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"message"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Clase": {
+				"properties": {
+					"dia": {
+						"type": "number",
+						"format": "double"
+					},
+					"horaInicio": {
+						"type": "number",
+						"format": "double"
+					},
+					"horaFin": {
+						"type": "number",
+						"format": "double"
+					},
+					"salon": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"dia",
+					"horaInicio",
+					"horaFin",
+					"salon"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Grupo": {
+				"properties": {
+					"nombre": {
+						"type": "string"
+					},
+					"profesor": {
+						"type": "string"
+					},
+					"maximo": {
+						"type": "number",
+						"format": "double"
+					},
+					"disponible": {
+						"type": "number",
+						"format": "double"
+					},
+					"clases": {
+						"items": {
+							"$ref": "#/components/schemas/Clase"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"nombre",
+					"profesor",
+					"maximo",
+					"disponible",
+					"clases"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Dictionary_Grupo_": {
+				"properties": {},
+				"type": "object",
+				"additionalProperties": {
+					"$ref": "#/components/schemas/Grupo"
+				}
+			},
+			"Materia": {
+				"properties": {
+					"semestre": {
+						"type": "number",
+						"format": "double"
+					},
+					"codigo": {
+						"type": "string"
+					},
+					"nombre": {
+						"type": "string"
+					},
+					"horas": {
+						"type": "number",
+						"format": "double"
+					},
+					"creditos": {
+						"type": "number",
+						"format": "double"
+					},
+					"requisitos": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"isElectiva": {
+						"type": "boolean"
+					},
+					"grupos": {
+						"$ref": "#/components/schemas/Dictionary_Grupo_"
+					},
+					"nombreCodigo": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"semestre",
+					"codigo",
+					"nombre",
+					"horas",
+					"creditos",
+					"requisitos",
+					"isElectiva",
+					"grupos",
+					"nombreCodigo"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Dictionary_Materia_": {
+				"properties": {},
+				"type": "object",
+				"additionalProperties": {
+					"$ref": "#/components/schemas/Materia"
+				}
+			},
+			"Pensum": {
+				"properties": {
+					"materias": {
+						"$ref": "#/components/schemas/Dictionary_Materia_"
+					}
+				},
+				"required": [
+					"materias"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "express-typescript",
+		"version": "1.0.0",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"openapi": "3.0.0",
+	"paths": {
+		"/ping": {
+			"get": {
+				"operationId": "GetMessage",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PingResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/materias/{codigo}": {
+			"get": {
+				"operationId": "GetMateriaByCodigo",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"allOf": [
+										{
+											"$ref": "#/components/schemas/Materia"
+										}
+									],
+									"nullable": true
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "codigo",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/materias": {
+			"get": {
+				"operationId": "GetAllMaterias",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Materia"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/materias/semestres": {
+			"get": {
+				"operationId": "GetMateriasGroupBySemestre",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"items": {
+											"$ref": "#/components/schemas/Materia"
+										},
+										"type": "array"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/materias/semestres/{semestre}": {
+			"get": {
+				"operationId": "GetMateriasOfSemestre",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Materia"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "semestre",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/materias/add": {
+			"post": {
+				"operationId": "AddMateria",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Materia"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/materias/addpensum": {
+			"post": {
+				"operationId": "AddPensum",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/Pensum"
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}
