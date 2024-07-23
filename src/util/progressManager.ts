@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import http from 'http'
 import { Materia, Pensum } from "../model/allmodels";
 import FireStoreController from "../controllers/firestoreController";
+import { MateriaService } from "../services/materiaService";
 
 interface SocketProgressResponse {
     total: number,
@@ -45,12 +46,12 @@ class ProgressManager {
         }
         this.isProcessing = true;
         // Simula la ejecución de una tarea larga
-        const controller = new FireStoreController();
+        const materiaService = new MateriaService();
         const allMaterias: Materia[] = Object.entries(pensum.materias).map(el => el[1]);
         const total = allMaterias.length;
         let finished = 0;
         for (const materia of allMaterias) {
-            await controller.addMateria(materia);
+            await materiaService.addMateria(materia);
             const progress: SocketProgressResponse = {
                 total: total,
                 finished: ++finished,
