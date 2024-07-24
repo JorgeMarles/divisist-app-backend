@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/test", async (_req, res) => {
     const controller = new DivisistController();
-    const response = await controller.test();
+    const response = await controller.test(_req.query.ci_session!.toString());
     return res.send(response);
 });
 

@@ -11,13 +11,17 @@ router.get("/", async (_req, res) => {
     return res.send(response);
 });
 
-router.get("/:codigo(\\d{7})", async (_req, res) => {
+type CodigoQuery = {
+    codigo: string
+}
+
+router.get("/:codigo(\\d{7})", async (_req: Request<CodigoQuery, Materia, {}, {}>, res) => {
     const controller = new FireStoreController();
     const response = await controller.getMateriaByCodigo(_req.params.codigo);
     if (!response) {
         res.status(404)
     }
-    return res.send(response);
+    return res.send(response ?? undefined);
 });
 
 router.get("/semestre", async (_req, res) => {
@@ -26,9 +30,13 @@ router.get("/semestre", async (_req, res) => {
     return res.send(response);
 });
 
-router.get("/semestre/:semestre(\\d{1,2})", async (_req, res) => {
+type SemestreQuery = {
+    semestre: number
+}
+
+router.get("/semestre/:semestre(\\d{1,2})", async (_req: Request<SemestreQuery, Materia[], {}, {}>, res) => {
     const controller = new FireStoreController();
-    const response = await controller.getMateriasOfSemestre(parseInt(_req.params.semestre))
+    const response = await controller.getMateriasOfSemestre(_req.params.semestre)
     return res.send(response);
 });
 
