@@ -1,5 +1,5 @@
 import { Get, Query, Route } from "tsoa";
-import { DivisistService } from "../services/divisistService";
+import DivisistService, { CarreraInfoResponse } from "../services/divisistService";
 
 
 
@@ -10,5 +10,10 @@ export default class DivisistController {
     @Get("/test")
     public async test(@Query() ci_session: string): Promise<any> {
         return await this.divisistService.test(ci_session);
+    }
+
+    @Get("/carrera")
+    public async getCarreraInfo(@Query() ci_session: string): Promise<CarreraInfoResponse> {
+        return await this.divisistService.getCarreraInfo(ci_session);
     }
 }
