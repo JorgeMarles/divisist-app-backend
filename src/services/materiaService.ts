@@ -46,4 +46,8 @@ export class MateriaService {
             await this.addMateria(pensum.materias[materia]);
         }
     }
+
+    public async deletePensum(){
+        (await db.materias.get()).docs.forEach(doc => doc.ref.delete())
+    }
 }

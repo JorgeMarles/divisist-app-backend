@@ -18,7 +18,8 @@ export interface Grupo {
 }
 
 export interface Materia {
-    semestre: number,
+    semestre: number;
+    carrera: string;
     codigo: string;
     nombre: string;
     horas: number;

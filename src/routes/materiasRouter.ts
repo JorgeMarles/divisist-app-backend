@@ -59,4 +59,10 @@ router.post("/addpensum", async (_req: Request<{}, {}, Pensum>, res) => {
     return res.send();
 });
 
+router.delete("/deletepensum", async (_req: Request<{}, {}, {}>, res) => {
+    const controller = new FireStoreController();
+    await controller.deleteAllPensum();
+    return res.send();
+});
+
 export default router;

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
+import { Body, Controller, Delete, Get, Path, Post, Query, Route } from "tsoa";
 import { Request } from "express";
 import db from "../firestore/firestore";
 import { Materia, Pensum } from "../model/allmodels";
@@ -47,5 +47,10 @@ export default class FireStoreController extends Controller {
     public async addPensum(@Body() pensum: Pensum): Promise<void> {
         const progressManager: ProgressManager = ProgressManager.getInstance();
         progressManager.addRequest(pensum); //no tiene await a propósito, de tenerlo, esperaría a que todas las materias se añadieran
+    }
+
+    @Delete("/deletepensum")
+    public async deleteAllPensum(): Promise<void> {
+        await this.materiaService.deletePensum()
     }
 }

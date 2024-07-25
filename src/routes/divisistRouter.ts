@@ -1,6 +1,6 @@
 import express, { Request } from "express";
 import DivisistController from "../controllers/divisistController";
-import { CarreraInfoResponse } from "../services/divisistService";
+import { CarreraInfo } from "../services/divisistService";
 import ErrorResponse from "../util/errorResponse";
 
 const router = express.Router();
@@ -15,7 +15,7 @@ router.get("/test", async (_req: Request<{}, any, {}, Request_ci_session>, res) 
     return res.send(response);
 });
 
-router.get("/carrera", async (_req: Request<{}, CarreraInfoResponse | ErrorResponse, {}, Request_ci_session>, res) => {
+router.get("/carrera", async (_req: Request<{}, CarreraInfo | ErrorResponse, {}, Request_ci_session>, res) => {
     const controller = new DivisistController();
     try {
         const response = await controller.getCarreraInfo(_req.query.ci_session.toString());
