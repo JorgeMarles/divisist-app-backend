@@ -27,7 +27,6 @@ export interface Materia {
     requisitos: string[];
     isElectiva: boolean;
     grupos: Dictionary<Grupo>;
-    nombreCodigo: string;
 }
 
 export interface Pensum {
