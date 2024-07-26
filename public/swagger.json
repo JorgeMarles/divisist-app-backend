@@ -119,9 +119,6 @@
 					},
 					"grupos": {
 						"$ref": "#/components/schemas/Dictionary_Grupo_"
-					},
-					"nombreCodigo": {
-						"type": "string"
 					}
 				},
 				"required": [
@@ -133,8 +130,7 @@
 					"creditos",
 					"requisitos",
 					"isElectiva",
-					"grupos",
-					"nombreCodigo"
+					"grupos"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -436,7 +432,9 @@
 						"description": "Ok",
 						"content": {
 							"application/json": {
-								"schema": {}
+								"schema": {
+									"$ref": "#/components/schemas/Pensum"
+								}
 							}
 						}
 					}

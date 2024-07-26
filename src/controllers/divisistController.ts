@@ -10,16 +10,19 @@ export default class DivisistController {
 
     @Get("/test")
     public async test(@Query() ci_session: string): Promise<any> {
-        return await this.divisistService.test(ci_session);
+        this.divisistService.setCi_Session(ci_session);
+        return await this.divisistService.test();
     }
 
     @Get("/carrera")
     public async getCarreraInfo(@Query() ci_session: string): Promise<CarreraInfo> {
-        return await this.divisistService.getCarreraInfo(ci_session);
+        this.divisistService.setCi_Session(ci_session);
+        return await this.divisistService.getCarreraInfo();
     }
 
     @Get("/pensum")
     public async getPensum(@Query() ci_session: string): Promise<Pensum> {
-        return await this.divisistService.getPensum(ci_session);
+        this.divisistService.setCi_Session(ci_session);
+        return await this.divisistService.getPensum();
     }
 }
