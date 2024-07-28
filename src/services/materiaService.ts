@@ -1,6 +1,7 @@
 import { DocumentReference, DocumentSnapshot, QueryDocumentSnapshot, QuerySnapshot } from "@google-cloud/firestore";
 import db from "../firestore/firestore";
 import { Materia, Pensum } from "../model/allmodels";
+import ProgressManager, { ProgressEvents } from "../util/progressManager";
 
 export class MateriaService {
     public async getMateriaByCodigo(codigoMateria: string): Promise<Materia | null> {
@@ -23,8 +24,8 @@ export class MateriaService {
             }
             semestres[materia.semestre].push(materia);
         }
-        for (let i = 0; i < semestres.length; ++i){
-            if (!semestres[i]){
+        for (let i = 0; i < semestres.length; ++i) {
+            if (!semestres[i]) {
                 semestres[i] = [];
             }
         }
@@ -37,17 +38,32 @@ export class MateriaService {
     }
 
     public async addMateria(materia: Materia): Promise<void> {
-        await db.materias.doc(materia.codigo).set(materia);      
+        await db.materias.doc(materia.codigo).set(materia);
         //await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
-    public async addPensum(pensum: Pensum, wss: WebSocket){
-        for(const materia in pensum.materias){
-            await this.addMateria(pensum.materias[materia]);
+    public async addPensum(pensum: Pensum) {
+        const pm: ProgressManager = ProgressManager.getInstance();
+        const total: number = Object.keys(pensum.materias).length;
+        let finished: number = 0;
+        for (const codigoMateria in pensum.materias) {
+            const materia = pensum.materias[codigoMateria];
+            await this.addMateria(materia);
+            pm.emitir(ProgressEvents.PROGRESS, {
+                total,
+                finished: ++finished,
+                message: `${materia.codigo} - ${materia.nombre}`,
+                date: new Date()
+            })
         }
+        pm.emitir(ProgressEvents.EXIT, {
+            date: new Date(),
+            message: "Proceso terminado.",
+            total, finished
+        })
     }
 
-    public async deletePensum(){
+    public async deletePensum() {
         (await db.materias.get()).docs.forEach(doc => doc.ref.delete())
     }
 }

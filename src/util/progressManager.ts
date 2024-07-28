@@ -1,20 +1,40 @@
 import { Server } from "socket.io";
 import http from 'http'
 import { Materia, Pensum } from "../model/allmodels";
-import FireStoreController from "../controllers/firestoreController";
 import { MateriaService } from "../services/materiaService";
 
-interface SocketProgressResponse {
-    total: number,
-    finished: number,
-    descripcion: string,
+type SocketMessage = {
+    message: string,
     date: Date
 }
 
+type SocketProgressMessage = SocketMessage & {
+    total: number,
+    finished: number
+}
+
+export enum ProgressEvents {
+    EXIT = "exit",
+    PROGRESS = "progress",
+    ERROR = "error"
+}
+
+enum SocketEvents {
+    CONNECTION = "connection",
+    DISCONNECT = "disconnect",
+}
+
+const Events = { ...SocketEvents, ...ProgressEvents };
+type Events = typeof Events;
+
 class ProgressManager {
     io: Server;
-    isProcessing: boolean = false;
+    private occupied: boolean = false;
     private static instancia: ProgressManager;
+
+    public isOccupied(): boolean {
+        return this.occupied;
+    }
 
     private constructor(server: http.Server) {
         this.io = new Server(server, {
@@ -22,48 +42,17 @@ class ProgressManager {
                 origin: "*"
             }
         });
-        
-        this.io.on('connection', (socket) => {
+        this.io.on(Events.CONNECTION, (socket) => {
             console.log('Client connected');
 
-            socket.on('disconnect', () => {
+            socket.on(Events.DISCONNECT, () => {
                 console.log('Client disconnected');
             });
         });
-
     }
 
-    public emitir(evento: string, datos: any) {
+    public emitir(evento: ProgressEvents, datos: SocketProgressMessage) {
         this.io.emit(evento, datos)
-    }
-
-    public async addRequest(pensum: Pensum): Promise<void> {
-        if (this.isProcessing) {
-            this.emitir('exit', {
-                result: "Error: proceso actualmente en uso"
-            })
-            return;
-        }
-        this.isProcessing = true;
-        // Simula la ejecución de una tarea larga
-        const materiaService = new MateriaService();
-        const allMaterias: Materia[] = Object.entries(pensum.materias).map(el => el[1]);
-        const total = allMaterias.length;
-        let finished = 0;
-        for (const materia of allMaterias) {
-            await materiaService.addMateria(materia);
-            const progress: SocketProgressResponse = {
-                total: total,
-                finished: ++finished,
-                descripcion: `${materia.codigo} - ${materia.nombre}`,
-                date: new Date()
-            }            
-            this.emitir('progress',progress);
-        }
-        this.isProcessing = false;
-        this.emitir('exit', {
-            result: "Proceso terminado"
-        })
     }
 
     public static getInstance(): ProgressManager {
@@ -73,11 +62,10 @@ class ProgressManager {
         return ProgressManager.instancia;
     }
 
-    public static setInstance(server: http.Server): ProgressManager {
+    public static setInstance(server: http.Server): void {
         if (!ProgressManager.instancia) {
             ProgressManager.instancia = new ProgressManager(server);
         }
-        return ProgressManager.instancia;
     }
 }
 

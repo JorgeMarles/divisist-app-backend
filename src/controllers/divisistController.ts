@@ -1,6 +1,9 @@
 import { Get, Query, Route } from "tsoa";
-import DivisistService, { CarreraInfo } from "../services/divisistService";
+import DivisistService from "../services/divisistService";
 import { Pensum } from "../model/allmodels";
+import { CarreraInfo } from "../util/DivisistFetcher";
+import ErrorResponse from "../util/errorResponse";
+import ProgressManager from "../util/progressManager";
 
 
 
@@ -10,19 +13,21 @@ export default class DivisistController {
 
     @Get("/test")
     public async test(@Query() ci_session: string): Promise<any> {
-        this.divisistService.setCi_Session(ci_session);
-        return await this.divisistService.test();
+        return await this.divisistService.test(ci_session);
     }
 
     @Get("/carrera")
     public async getCarreraInfo(@Query() ci_session: string): Promise<CarreraInfo> {
-        this.divisistService.setCi_Session(ci_session);
-        return await this.divisistService.getCarreraInfo();
+        return await this.divisistService.getCarreraInfo(ci_session);
     }
 
     @Get("/pensum")
-    public async getPensum(@Query() ci_session: string): Promise<Pensum> {
-        this.divisistService.setCi_Session(ci_session);
-        return await this.divisistService.getPensum();
+    public async getPensum(@Query() ci_session: string): Promise<void | ErrorResponse> {
+        if(ProgressManager.getInstance().isOccupied()){
+            return {
+                error: "Server processing another request."
+            }
+        }
+        this.divisistService.getPensum(ci_session);
     }
 }

@@ -31,4 +31,6 @@ export interface Materia {
 
 export interface Pensum {
     materias: Dictionary<Materia>;
+    codigo: string;
+    fecha: Date;
 }

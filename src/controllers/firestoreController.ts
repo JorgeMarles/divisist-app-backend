@@ -5,6 +5,7 @@ import { Materia, Pensum } from "../model/allmodels";
 import { DocumentReference, QuerySnapshot } from "@google-cloud/firestore";
 import { MateriaService } from "../services/materiaService";
 import ProgressManager from "../util/progressManager";
+import ErrorResponse from "../util/errorResponse";
 
 
 
@@ -44,9 +45,13 @@ export default class FireStoreController extends Controller {
     }
 
     @Post("/addpensum")
-    public async addPensum(@Body() pensum: Pensum): Promise<void> {
-        const progressManager: ProgressManager = ProgressManager.getInstance();
-        progressManager.addRequest(pensum); //no tiene await a propósito, de tenerlo, esperaría a que todas las materias se añadieran
+    public async addPensum(@Body() pensum: Pensum): Promise<void | ErrorResponse> {
+        if(ProgressManager.getInstance().isOccupied()){
+            return {
+                error: "Server processing another request."
+            }
+        }
+        this.materiaService.addPensum(pensum);
     }
 
     @Delete("/deletepensum")

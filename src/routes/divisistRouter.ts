@@ -1,8 +1,8 @@
 import express, { Request } from "express";
 import DivisistController from "../controllers/divisistController";
-import { CarreraInfo } from "../services/divisistService";
 import ErrorResponse from "../util/errorResponse";
 import { Pensum } from "../model/allmodels";
+import { CarreraInfo } from "../util/DivisistFetcher";
 
 const router = express.Router();
 
@@ -29,8 +29,8 @@ router.get("/carrera", async (_req: Request<{}, CarreraInfo | ErrorResponse, {},
 router.get("/pensum", async (_req: Request<{}, Pensum | ErrorResponse, {}, Request_ci_session>, res) => {
     const controller = new DivisistController();
     try {
-        const response = await controller.getPensum(_req.query.ci_session.toString());
-        return res.send(response);
+        await controller.getPensum(_req.query.ci_session.toString());
+        return res.send();
     } catch (error: any) {
         return res.status(500).send({ error: error.toString() });
     }
