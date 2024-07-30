@@ -1,7 +1,7 @@
 import { DocumentReference, DocumentSnapshot, QueryDocumentSnapshot, QuerySnapshot } from "@google-cloud/firestore";
 import db from "../firestore/firestore";
 import { Materia, Pensum } from "../model/allmodels";
-import ProgressManager, { ProgressEvents } from "../util/progressManager";
+import ProgressManager, { ProgressEvents, SocketMessageStatus } from "../util/progressManager";
 
 export class MateriaService {
     public async getMateriaByCodigo(codigoMateria: string): Promise<Materia | null> {
@@ -48,18 +48,32 @@ export class MateriaService {
         let finished: number = 0;
         for (const codigoMateria in pensum.materias) {
             const materia = pensum.materias[codigoMateria];
-            await this.addMateria(materia);
-            pm.emitir(ProgressEvents.PROGRESS, {
-                total,
-                finished: ++finished,
-                message: `${materia.codigo} - ${materia.nombre}`,
-                date: new Date()
-            })
+            try {
+                await this.addMateria(materia);
+                pm.emitir(ProgressEvents.PROGRESS, {
+                    total,
+                    finished: ++finished,
+                    message: `${materia.codigo} - ${materia.nombre}`,
+                    date: new Date(),
+                    status: SocketMessageStatus.OK
+                })
+            } catch (error: any) {
+                pm.emitir(ProgressEvents.PROGRESS, {
+                    total,
+                    finished: finished,
+                    message: `Error: ${error.toString()}`,
+                    date: new Date(),
+                    status: SocketMessageStatus.ERROR
+                })
+            }
+
         }
         pm.emitir(ProgressEvents.EXIT, {
             date: new Date(),
             message: "Proceso terminado.",
-            total, finished
+            total,
+            finished,
+            status: SocketMessageStatus.OK
         })
     }
 

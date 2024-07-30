@@ -29,8 +29,12 @@ export interface Materia {
     grupos: Dictionary<Grupo>;
 }
 
-export interface Pensum {
-    materias: Dictionary<Materia>;
+export interface PensumInfo {
     codigo: string;
-    fecha: Date;
+    fechaCaptura: Date;
+    nombre: string;
 }
+
+export type Pensum = {
+    materias: Dictionary<Materia>;
+} & PensumInfo

@@ -1,7 +1,6 @@
 import DivisistFetcher, { CarreraInfo } from '../util/DivisistFetcher';
 import ProgressManager from '../util/progressManager';
-import { Clase, Materia, Pensum } from './../model/allmodels';
-import { DOMWindow } from 'jsdom';
+import { Pensum } from './../model/allmodels';
 
 
 export default class DivisistService {

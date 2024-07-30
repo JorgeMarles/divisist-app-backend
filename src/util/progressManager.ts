@@ -3,9 +3,16 @@ import http from 'http'
 import { Materia, Pensum } from "../model/allmodels";
 import { MateriaService } from "../services/materiaService";
 
+export enum SocketMessageStatus {
+    OK = 200,
+    ERROR = 500
+}
+
 type SocketMessage = {
     message: string,
-    date: Date
+    date?: Date,
+    status: SocketMessageStatus,
+    data?: any
 }
 
 type SocketProgressMessage = SocketMessage & {
@@ -52,7 +59,7 @@ class ProgressManager {
     }
 
     public emitir(evento: ProgressEvents, datos: SocketProgressMessage) {
-        this.io.emit(evento, datos)
+        this.io.emit(evento, {...datos, date: new Date()})
     }
 
     public static getInstance(): ProgressManager {

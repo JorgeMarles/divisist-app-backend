@@ -1,5 +1,6 @@
-import { Pensum, Materia, Clase } from "../model/allmodels";
+import { Pensum, Materia, Clase, PensumInfo } from "../model/allmodels";
 import { JSDOM } from 'jsdom'
+import ProgressManager, { ProgressEvents, SocketMessageStatus } from "./progressManager";
 
 
 export interface CarreraInfo {
@@ -17,7 +18,6 @@ enum HttpMethod {
     POST = "POST"
 }
 
-
 const diasSemana: { [key: string]: number } = {
     "LUNES": 0,
     "MARTES": 1,
@@ -30,18 +30,20 @@ const diasSemana: { [key: string]: number } = {
 
 /**
  * ToDo:
- *  - Refactorizar código
- *  - Integrar el proceso de extracción de materias con ProgressManager
  *  - Implementar la función de cambio
- *  - Enviar el pensum por el socket (?) o hacer que en el frontend cuando el socket envíe un 
- *    ProgressEvents.EXIT hacer la petición a getPensum()?
  *  - Guardar otra colección con los pensums
  */
 export default class DivisistFetcher {
     private ci_session: string = "";
+    private progress: ProgressManager;
+    private totalMaterias: number = 0;
+    private materiasTerminadas: number = 0;
+    private delayTimeMs: number = 1000 * 0.5;
 
-    public constructor(ci_session: string){
+    public constructor(ci_session: string, delayTimeSeconds?: number) {
         this.ci_session = ci_session;
+        this.progress = ProgressManager.getInstance();
+        if (delayTimeSeconds) this.delayTimeMs = delayTimeSeconds * 1000;
     }
 
     public async test(): Promise<any> {
@@ -50,7 +52,7 @@ export default class DivisistFetcher {
     }
 
     private async getJSDOM(endpoint: string, method: HttpMethod, data?: MateriaInfoRequest): Promise<Document> {
-        let headers: { [key: string]: string } = {
+        let headers: HeadersInit = {
             'cookie': `ci_session=${this.ci_session}`
         }
         if (method === HttpMethod.POST) {
@@ -61,6 +63,9 @@ export default class DivisistFetcher {
             method: method,
             body: method === HttpMethod.POST ? new URLSearchParams(data).toString() : undefined
         });
+
+        await new Promise(res => setTimeout(res, this.delayTimeMs))
+
         if (response.status !== 200) {
             throw new Error(`Fetch ${endpoint}: ${response.statusText} (${response.status})`)
         }
@@ -74,14 +79,18 @@ export default class DivisistFetcher {
     }
 
     public async getPensum(): Promise<Pensum> {
-        
-
         const carreraInfo: CarreraInfo = await this.getCarreraInfo();
-        const pensum: Pensum = {
-            materias: {},
+        const pensumInfo: PensumInfo = {
             codigo: carreraInfo.codigo,
-            fecha: new Date()
+            fechaCaptura: new Date(),
+            nombre: carreraInfo.nombre
         };
+
+        const pensum: Pensum = {
+            ...pensumInfo,
+            materias: {}
+        }
+
         const pensumEndpoint: string = "informacion_academica/pensum";
         const document: Document = await this.getJSDOM(pensumEndpoint, HttpMethod.GET);
         const querySemestres: string = "#content_completw > div.wrapper > div > section.content > div > div.box-body.no-padding > div > table > tbody"
@@ -92,20 +101,30 @@ export default class DivisistFetcher {
         }
 
         const semestres: HTMLCollection = semestresEl.children;
+
+        this.totalMaterias = (Array(semestres).map(el => el.length)).reduce((acc, el) => acc + el, 0)
+
         let numSemestre = 1;
         for (const semestre of semestres) {
-            const materias: Element[] = Array.from(semestre.children).slice(1);
+            const materias: HTMLCollection = semestre.children;
+            let materiaSemestre = 1;
             for (const materia of materias) {
+                if (materiaSemestre++ === 1) continue;
                 await this.addMateriaPensum(pensum, materia, numSemestre, carreraInfo);
-                await new Promise(res => setTimeout(res, 500))
             }
             numSemestre++;
         }
+        this.progress.emitir(ProgressEvents.EXIT, {
+            finished: this.materiasTerminadas,
+            total: this.totalMaterias,
+            message: "Pensum terminado.",
+            status: SocketMessageStatus.OK,
+            data: pensum
+        })
         return pensum;
     }
 
     private async addMateriaPensum(pensum: Pensum, materia: Element, numSemestre: number, carreraInfo: CarreraInfo): Promise<void> {
-
         const titulo = (materia.children[0] as HTMLElement).title;
         const contenido = materia.children[0].innerHTML;
 
@@ -124,7 +143,12 @@ export default class DivisistFetcher {
             semestre: numSemestre,
             grupos: {}
         }
-        //llenar materiaObj.grupos
+        this.progress.emitir(ProgressEvents.PROGRESS, {
+            finished: this.materiasTerminadas++,
+            message: `Añadiendo ${codigo} - ${nombre}`,
+            status: SocketMessageStatus.OK,
+            total: this.totalMaterias
+        })
         await this.procesarMateria(materiaObj);
         pensum.materias[codigo] = materiaObj;
     }
@@ -180,6 +204,12 @@ export default class DivisistFetcher {
         for (const eqCell of rows) {
             const codigoEquivalencia = eqCell.children[0].innerHTML;
             const materiaBusqueda: Materia = { ...materia, codigo: codigoEquivalencia, grupos: {} }
+            this.progress.emitir(ProgressEvents.PROGRESS, {
+                finished: this.materiasTerminadas++,
+                message: `Añadiendo equivalencia ${materiaBusqueda.codigo} de ${materia.codigo} - ${materia.nombre}`,
+                status: SocketMessageStatus.OK,
+                total: this.totalMaterias
+            })
             const materiaEq = await this.procesarMateria(materiaBusqueda, true);
             materia.grupos = { ...materia.grupos, ...materiaEq.grupos };
         }
