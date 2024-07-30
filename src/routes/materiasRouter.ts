@@ -1,6 +1,7 @@
 import express, { Request } from "express";
 import FireStoreController from "../controllers/firestoreController";
-import { Materia, Pensum } from "../model/allmodels";
+import { Materia, Pensum, PensumInfo } from "../model/allmodels";
+import ErrorResponse from "../util/errorResponse";
 
 
 const router = express.Router();
@@ -63,6 +64,16 @@ router.delete("/deletepensum", async (_req: Request<{}, {}, {}>, res) => {
     const controller = new FireStoreController();
     await controller.deleteAllPensum();
     return res.send();
+});
+
+router.get("/pensums", async (_req: Request<{}, PensumInfo[] | ErrorResponse, {}, {}>, res) => {
+    const controller = new FireStoreController();
+    try {
+        const lista: PensumInfo[] = await controller.getPensumList();
+        return res.send(lista);
+    } catch (error: any) {
+        return res.status(500).send({ error: error.toString() });
+    }
 });
 
 export default router;

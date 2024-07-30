@@ -1,4 +1,4 @@
-import { Pensum, Materia, Clase, PensumInfo } from "../model/allmodels";
+import { Pensum, Materia, Clase, PensumInfo, MateriaState, GrupoState } from "../model/allmodels";
 import { JSDOM } from 'jsdom'
 import ProgressManager, { ProgressEvents, SocketMessageStatus } from "./progressManager";
 
@@ -102,8 +102,8 @@ export default class DivisistFetcher {
 
         const semestres: HTMLCollection = semestresEl.children;
 
-        this.totalMaterias = (Array(semestres).map(el => el.length)).reduce((acc, el) => acc + el, 0)
-
+        this.totalMaterias = ([...semestres].map(el => el.children.length)).reduce((acc, el) => acc + el, 0)
+        console.log(this.totalMaterias, "materias");
         let numSemestre = 1;
         for (const semestre of semestres) {
             const materias: HTMLCollection = semestre.children;
@@ -141,16 +141,18 @@ export default class DivisistFetcher {
             nombre,
             requisitos,
             semestre: numSemestre,
-            grupos: {}
+            grupos: {},
+            estado: MateriaState.NOT_CHANGED
         }
         this.progress.emitir(ProgressEvents.PROGRESS, {
             finished: this.materiasTerminadas++,
-            message: `Añadiendo ${codigo} - ${nombre}`,
+            message: `${codigo} - ${nombre}`,
             status: SocketMessageStatus.OK,
             total: this.totalMaterias
         })
         await this.procesarMateria(materiaObj);
-        pensum.materias[codigo] = materiaObj;
+
+        if (Object.keys(materiaObj.grupos).length > 0) pensum.materias[codigo] = materiaObj;
     }
 
     private getMateriaNombreRequisitos(titulo: string): [string, string[]] {
@@ -205,8 +207,8 @@ export default class DivisistFetcher {
             const codigoEquivalencia = eqCell.children[0].innerHTML;
             const materiaBusqueda: Materia = { ...materia, codigo: codigoEquivalencia, grupos: {} }
             this.progress.emitir(ProgressEvents.PROGRESS, {
-                finished: this.materiasTerminadas++,
-                message: `Añadiendo equivalencia ${materiaBusqueda.codigo} de ${materia.codigo} - ${materia.nombre}`,
+                finished: this.materiasTerminadas,
+                message: `Equivalencia ${materiaBusqueda.codigo} de ${materia.codigo} - ${materia.nombre}`,
                 status: SocketMessageStatus.OK,
                 total: this.totalMaterias
             })
@@ -240,7 +242,7 @@ export default class DivisistFetcher {
             const maximo: number = parseInt(row.children[1].innerHTML.trim());
             const disponible: number = parseInt(row.children[2].innerHTML.trim());
             const profesor: string = row.children[3].innerHTML.trim();
-            materia.grupos[nombre] = { nombre, maximo, disponible, profesor, clases: [] };
+            materia.grupos[nombre] = { nombre, maximo, disponible, profesor, clases: [], estado: GrupoState.NOT_CHANGED };
         }
     }
 

@@ -1,6 +1,6 @@
-import { DocumentReference, DocumentSnapshot, QueryDocumentSnapshot, QuerySnapshot } from "@google-cloud/firestore";
+import { DocumentReference, DocumentSnapshot, QueryDocumentSnapshot, QuerySnapshot, Timestamp } from "@google-cloud/firestore";
 import db from "../firestore/firestore";
-import { Materia, Pensum } from "../model/allmodels";
+import { GrupoState, Materia, MateriaState, Pensum, PensumInfo, PensumInfoFirestore } from "../model/allmodels";
 import ProgressManager, { ProgressEvents, SocketMessageStatus } from "../util/progressManager";
 
 export class MateriaService {
@@ -45,10 +45,30 @@ export class MateriaService {
     public async addPensum(pensum: Pensum) {
         const pm: ProgressManager = ProgressManager.getInstance();
         const total: number = Object.keys(pensum.materias).length;
+        const pensumInfo: PensumInfo = {
+            codigo: pensum.codigo,
+            fechaCaptura: new Date(pensum.fechaCaptura),
+            nombre: pensum.nombre
+        }
+        console.log(pensumInfo);
+        await db.pensums.doc(pensumInfo.codigo).set({ ...pensumInfo, fechaCaptura: Timestamp.fromDate(pensumInfo.fechaCaptura) });
+        pm.emitir(ProgressEvents.PROGRESS, {
+            total: 1,
+            finished: 1,
+            message: `Añadiendo pensum de ${pensumInfo.nombre}`,
+            date: new Date(),
+            status: SocketMessageStatus.OK
+        })
         let finished: number = 0;
         for (const codigoMateria in pensum.materias) {
             const materia = pensum.materias[codigoMateria];
             try {
+                if (!materia.carrera) materia.carrera = pensum.codigo;
+                if (!materia.estado) materia.estado = MateriaState.NOT_CHANGED;
+                for (const grupoCod in materia.grupos) {
+                    const grupo = materia.grupos[grupoCod];
+                    if (!grupo.estado) grupo.estado = GrupoState.NOT_CHANGED;
+                }
                 await this.addMateria(materia);
                 pm.emitir(ProgressEvents.PROGRESS, {
                     total,
@@ -77,7 +97,12 @@ export class MateriaService {
         })
     }
 
-    public async deletePensum() {
+    public async deletePensum(): Promise<void> {
         (await db.materias.get()).docs.forEach(doc => doc.ref.delete())
+    }
+
+    public async getListPensums(): Promise<PensumInfo[]> {
+        const documents: QuerySnapshot<PensumInfoFirestore> = await db.pensums.get();
+        return documents.docs.map(el => { return { ...el.data(), fechaCaptura: el.data().fechaCaptura.toDate() } });
     }
 }

@@ -1,5 +1,5 @@
 import { DocumentData, Firestore, FirestoreDataConverter, PartialWithFieldValue, QueryDocumentSnapshot, WithFieldValue } from '@google-cloud/firestore'
-import { Materia } from '../model/allmodels';
+import { Materia, Pensum, PensumInfo, PensumInfoFirestore } from '../model/allmodels';
 
 const firestore = new Firestore({
     projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
@@ -20,7 +20,8 @@ const dataPoint = <T>(collectionPath: string) => firestore.collection(collection
 // Construct a database helper object
 const db = {
     // list your collections here
-    materias: dataPoint<Materia>('materias')
+    materias: dataPoint<Materia>('materias'),
+    pensums: dataPoint<PensumInfoFirestore>('pensums')
 }
 
 // export your helper

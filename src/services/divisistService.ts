@@ -1,5 +1,4 @@
 import DivisistFetcher, { CarreraInfo } from '../util/DivisistFetcher';
-import ProgressManager from '../util/progressManager';
 import { Pensum } from './../model/allmodels';
 
 
@@ -13,11 +12,6 @@ export default class DivisistService {
     public async getCarreraInfo(ci_session: string): Promise<CarreraInfo> {
         const fetcher: DivisistFetcher = new DivisistFetcher(ci_session);
         return await fetcher.getCarreraInfo();
-    }
-
-    public isOccupied(): boolean {
-        const pm: ProgressManager = ProgressManager.getInstance();
-        return pm.isOccupied();
     }
 
     public async getPensum(ci_session: string): Promise<Pensum> {

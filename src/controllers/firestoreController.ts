@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Path, Post, Query, Route } from "tsoa";
 import { Request } from "express";
 import db from "../firestore/firestore";
-import { Materia, Pensum } from "../model/allmodels";
+import { Materia, Pensum, PensumInfo } from "../model/allmodels";
 import { DocumentReference, QuerySnapshot } from "@google-cloud/firestore";
 import { MateriaService } from "../services/materiaService";
 import ProgressManager from "../util/progressManager";
@@ -52,6 +52,11 @@ export default class FireStoreController extends Controller {
             }
         }
         this.materiaService.addPensum(pensum);
+    }
+
+    @Get("/pensums")
+    public async getPensumList(): Promise<PensumInfo[]>{
+        return await this.materiaService.getListPensums();
     }
 
     @Delete("/deletepensum")
