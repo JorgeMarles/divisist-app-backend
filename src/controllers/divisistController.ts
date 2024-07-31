@@ -22,7 +22,7 @@ export default class DivisistController {
     }
 
     @Get("/pensum")
-    public async getPensum(@Query() ci_session: string): Promise<void | ErrorResponse> {
+    public async getPensum(@Query() ci_session: string, @Query() delay?: number): Promise<void | ErrorResponse> {
         if(ProgressManager.getInstance().isOccupied()){
             return {
                 error: "Server processing another request."

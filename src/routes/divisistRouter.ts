@@ -10,6 +10,10 @@ interface Request_ci_session {
     ci_session: string
 }
 
+interface RequestDelay {
+    delay?: number
+}
+
 router.get("/test", async (_req: Request<{}, any, {}, Request_ci_session>, res) => {
     const controller = new DivisistController();
     const response = await controller.test(_req.query.ci_session!.toString());
@@ -26,7 +30,7 @@ router.get("/carrera", async (_req: Request<{}, CarreraInfo | ErrorResponse, {},
     }
 });
 
-router.get("/pensum", async (_req: Request<{}, Pensum | ErrorResponse, {}, Request_ci_session>, res) => {
+router.get("/pensum", async (_req: Request<{}, Pensum | ErrorResponse, {}, Request_ci_session & RequestDelay>, res) => {
     const controller = new DivisistController();
     try {
         await controller.getPensum(_req.query.ci_session.toString());

@@ -2,6 +2,7 @@ import { DocumentReference, DocumentSnapshot, QueryDocumentSnapshot, QuerySnapsh
 import db from "../firestore/firestore";
 import { GrupoState, Materia, MateriaState, Pensum, PensumInfo, PensumInfoFirestore } from "../model/allmodels";
 import ProgressManager, { ProgressEvents, SocketMessageStatus } from "../util/progressManager";
+import ErrorResponse from "../util/errorResponse";
 
 export class MateriaService {
     public async getMateriaByCodigo(codigoMateria: string): Promise<Materia | null> {
@@ -91,18 +92,40 @@ export class MateriaService {
         pm.emitir(ProgressEvents.EXIT, {
             date: new Date(),
             message: "Proceso terminado.",
+            data: pensum,
             total,
             finished,
             status: SocketMessageStatus.OK
         })
     }
 
-    public async deletePensum(): Promise<void> {
-        (await db.materias.get()).docs.forEach(doc => doc.ref.delete())
+    public async deletePensum(codigoPensum: string): Promise<void> {
+        await db.pensums.doc(codigoPensum).delete();
+        (await db.materias.where('carrera','==',codigoPensum).get()).docs.forEach(doc => doc.ref.delete())
+        
     }
 
     public async getListPensums(): Promise<PensumInfo[]> {
         const documents: QuerySnapshot<PensumInfoFirestore> = await db.pensums.get();
         return documents.docs.map(el => { return { ...el.data(), fechaCaptura: el.data().fechaCaptura.toDate() } });
+    }
+
+    public async getPensum(codigoPensum: string): Promise<Pensum > {
+        const pensumIF: PensumInfoFirestore | undefined = (await db.pensums.doc(codigoPensum).get()).data();
+        if(!pensumIF){
+            throw "No hay pensum "+codigoPensum;
+        }
+        const pensum: Pensum = {
+            codigo: pensumIF.codigo,
+            nombre: pensumIF.nombre,
+            fechaCaptura: pensumIF.fechaCaptura.toDate(),
+            materias: {}
+        }
+        
+        const materias: Materia[] = (await db.materias.where('carrera','==',codigoPensum).get()).docs.map(el => el.data());
+        for(const materia of materias){
+            pensum.materias[materia.codigo] = materia;
+        }
+        return pensum;
     }
 }

@@ -59,8 +59,13 @@ export default class FireStoreController extends Controller {
         return await this.materiaService.getListPensums();
     }
 
-    @Delete("/deletepensum")
-    public async deleteAllPensum(): Promise<void> {
-        await this.materiaService.deletePensum()
+    @Delete("/deletepensum/{carrera}")
+    public async deleteAllPensum(@Path() carrera: string): Promise<void> {
+        await this.materiaService.deletePensum(carrera)
+    }
+
+    @Get("/pensum/{carrera}")
+    public async getPensum(@Path() carrera: string): Promise<Pensum>{
+        return await this.materiaService.getPensum(carrera);
     }
 }

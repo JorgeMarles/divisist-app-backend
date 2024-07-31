@@ -151,8 +151,9 @@ export default class DivisistFetcher {
             total: this.totalMaterias
         })
         await this.procesarMateria(materiaObj);
+        console.log(materiaObj.nombre, "grupos=>", Object.keys(materiaObj.grupos));
 
-        if (Object.keys(materiaObj.grupos).length > 0) pensum.materias[codigo] = materiaObj;
+        pensum.materias[codigo] = materiaObj;
     }
 
     private getMateriaNombreRequisitos(titulo: string): [string, string[]] {
@@ -198,6 +199,7 @@ export default class DivisistFetcher {
                 }
             }
         }
+        
         return materia;
     }
 

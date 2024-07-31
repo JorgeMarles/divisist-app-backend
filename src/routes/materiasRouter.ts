@@ -60,9 +60,13 @@ router.post("/addpensum", async (_req: Request<{}, {}, Pensum>, res) => {
     return res.send();
 });
 
-router.delete("/deletepensum", async (_req: Request<{}, {}, {}>, res) => {
+type CarreraQuery = {
+    carrera: string
+}
+
+router.delete("/deletepensum/:carrera(\\d{3})", async (_req: Request<CarreraQuery, {}, {}>, res) => {
     const controller = new FireStoreController();
-    await controller.deleteAllPensum();
+    await controller.deleteAllPensum(_req.params.carrera);
     return res.send();
 });
 
@@ -70,6 +74,16 @@ router.get("/pensums", async (_req: Request<{}, PensumInfo[] | ErrorResponse, {}
     const controller = new FireStoreController();
     try {
         const lista: PensumInfo[] = await controller.getPensumList();
+        return res.send(lista);
+    } catch (error: any) {
+        return res.status(500).send({ error: error.toString() });
+    }
+});
+
+router.get("/pensum/:carrera", async (_req: Request<CarreraQuery, Pensum | ErrorResponse, {}, {}>, res) => {
+    const controller = new FireStoreController();
+    try {
+        const lista: Pensum = await controller.getPensum(_req.params.carrera);
         return res.send(lista);
     } catch (error: any) {
         return res.status(500).send({ error: error.toString() });

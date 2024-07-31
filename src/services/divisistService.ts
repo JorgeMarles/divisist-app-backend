@@ -14,8 +14,8 @@ export default class DivisistService {
         return await fetcher.getCarreraInfo();
     }
 
-    public async getPensum(ci_session: string): Promise<Pensum> {
-        const fetcher: DivisistFetcher = new DivisistFetcher(ci_session);
+    public async getPensum(ci_session: string, delay?: number): Promise<Pensum> {
+        const fetcher: DivisistFetcher = new DivisistFetcher(ci_session, delay);
         return await fetcher.getPensum();
     }
 
