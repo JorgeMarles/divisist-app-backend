@@ -28,6 +28,6 @@ export default class DivisistController {
                 error: "Server processing another request."
             }
         }
-        this.divisistService.getPensum(ci_session);
+        this.divisistService.getPensum(ci_session,delay);
     }
 }

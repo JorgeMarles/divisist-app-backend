@@ -1,4 +1,6 @@
 import DivisistFetcher, { CarreraInfo } from '../util/DivisistFetcher';
+import ErrorResponse from '../util/errorResponse';
+import ProgressManager, { ProgressEvents, SocketMessageStatus } from '../util/progressManager';
 import { Pensum } from './../model/allmodels';
 
 
@@ -14,9 +16,25 @@ export default class DivisistService {
         return await fetcher.getCarreraInfo();
     }
 
-    public async getPensum(ci_session: string, delay?: number): Promise<Pensum> {
-        const fetcher: DivisistFetcher = new DivisistFetcher(ci_session, delay);
-        return await fetcher.getPensum();
+    public async getPensum(ci_session: string, delay?: number): Promise<Pensum | ErrorResponse> {
+        try {
+            const fetcher: DivisistFetcher = new DivisistFetcher(ci_session, delay);
+            const pensum: Pensum = await fetcher.getPensum();
+            
+            return pensum;
+        } catch (error: any) {       
+            console.log(error);
+                 
+            ProgressManager.getInstance().emitir(ProgressEvents.ERROR, {
+                finished: 0,
+                message: "Ha ocurrido un error obteniendo la información, por favor, verifica que la cookie es válida.",
+                status: SocketMessageStatus.ERROR,
+                total: 0
+            })
+            return {
+                error: error
+            }
+        }
     }
 
 }

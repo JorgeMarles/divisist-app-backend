@@ -1,4 +1,4 @@
-import { Pensum, Materia, Clase, PensumInfo, MateriaState, GrupoState } from "../model/allmodels";
+import { Pensum, Materia, Clase, PensumInfo, MateriaState, GrupoState, Grupo } from "../model/allmodels";
 import { JSDOM } from 'jsdom'
 import ProgressManager, { ProgressEvents, SocketMessageStatus } from "./progressManager";
 
@@ -117,7 +117,7 @@ export default class DivisistFetcher {
         this.progress.emitir(ProgressEvents.EXIT, {
             finished: this.materiasTerminadas,
             total: this.totalMaterias,
-            message: "Pensum terminado.",
+            message: `Pensum de ${pensum.nombre} terminado.`,
             status: SocketMessageStatus.OK,
             data: pensum
         })
@@ -151,7 +151,7 @@ export default class DivisistFetcher {
             total: this.totalMaterias
         })
         await this.procesarMateria(materiaObj);
-        console.log(materiaObj.nombre, "grupos=>", Object.keys(materiaObj.grupos));
+        console.log(materiaObj.nombre, "grupos =>", Object.keys(materiaObj.grupos));
 
         pensum.materias[codigo] = materiaObj;
     }
@@ -197,6 +197,13 @@ export default class DivisistFetcher {
                 if (equivElement) {
                     await this.addEquivalencias(equivElement, materia)
                 }
+            }
+        }        
+        //eliminar Grupos sin clases
+        for(const grupoCod in materia.grupos){
+            const grupo: Grupo = materia.grupos[grupoCod];
+            if(grupo.clases.length === 0){
+                delete materia.grupos[grupoCod];
             }
         }
         
