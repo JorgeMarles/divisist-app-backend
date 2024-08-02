@@ -1,5 +1,6 @@
 import { DocumentData, Firestore, FirestoreDataConverter, PartialWithFieldValue, QueryDocumentSnapshot, WithFieldValue } from '@google-cloud/firestore'
 import { Materia, Pensum, PensumInfo, PensumInfoFirestore } from '../model/allmodels';
+import { UserFirestore } from '../model/user';
 
 const firestore = new Firestore({
     projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
@@ -21,7 +22,8 @@ const dataPoint = <T>(collectionPath: string) => firestore.collection(collection
 const db = {
     // list your collections here
     materias: dataPoint<Materia>('materias'),
-    pensums: dataPoint<PensumInfoFirestore>('pensums')
+    pensums: dataPoint<PensumInfoFirestore>('pensums'),
+    users: dataPoint<UserFirestore>('users')
 }
 
 // export your helper

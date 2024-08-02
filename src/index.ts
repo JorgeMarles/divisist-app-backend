@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import PingRouter from "./routes/pingRouter";
 import MateriasRouter from "./routes/materiasRouter"
 import DivisistRouter from "./routes/divisistRouter"
+import AuthRouter from "./routes/authRouter"
 import http, { createServer } from 'http';
 import ProgressManager from "./util/progressManager";
 import cors from 'cors'
@@ -45,3 +46,4 @@ server.listen(PORT, () => {
 app.use('/ping',PingRouter);
 app.use('/materias',MateriasRouter);
 app.use('/divisist',DivisistRouter);
+app.use('/auth',AuthRouter)

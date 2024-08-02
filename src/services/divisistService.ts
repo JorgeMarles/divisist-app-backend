@@ -1,5 +1,5 @@
 import DivisistFetcher, { CarreraInfo } from '../util/DivisistFetcher';
-import ErrorResponse from '../util/errorResponse';
+import ErrorResponse, { ResponseStatus } from '../util/errorResponse';
 import ProgressManager, { ProgressEvents, SocketMessageStatus } from '../util/progressManager';
 import { Pensum } from './../model/allmodels';
 
@@ -32,7 +32,8 @@ export default class DivisistService {
                 total: 0
             })
             return {
-                error: error
+                error: error,
+                status: ResponseStatus.INTERNAL_ERROR
             }
         }
     }

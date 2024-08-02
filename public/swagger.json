@@ -18,6 +18,32 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"ResponseStatus": {
+				"enum": [
+					200,
+					403,
+					401,
+					500,
+					404
+				],
+				"type": "number"
+			},
+			"ErrorResponse": {
+				"properties": {
+					"error": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/ResponseStatus"
+					}
+				},
+				"required": [
+					"error",
+					"status"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Clase": {
 				"properties": {
 					"dia": {
@@ -158,18 +184,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ErrorResponse": {
-				"properties": {
-					"error": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"error"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"Dictionary_Materia_": {
 				"properties": {},
 				"type": "object",
@@ -216,18 +230,54 @@
 					}
 				]
 			},
-			"CarreraInfo": {
+			"UserJWT": {
 				"properties": {
-					"codigo": {
+					"user": {
 						"type": "string"
 					},
-					"nombre": {
+					"name": {
 						"type": "string"
 					}
 				},
 				"required": [
-					"codigo",
-					"nombre"
+					"user",
+					"name"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AccessTokenResponse": {
+				"properties": {
+					"accessToken": {
+						"type": "string"
+					},
+					"user": {
+						"$ref": "#/components/schemas/UserJWT"
+					},
+					"status": {
+						"$ref": "#/components/schemas/ResponseStatus"
+					}
+				},
+				"required": [
+					"accessToken",
+					"user",
+					"status"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserLoginRequest": {
+				"properties": {
+					"user": {
+						"type": "string"
+					},
+					"password": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"user",
+					"password"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -264,140 +314,6 @@
 				"parameters": []
 			}
 		},
-		"/materias/{codigo}": {
-			"get": {
-				"operationId": "GetMateriaByCodigo",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"allOf": [
-										{
-											"$ref": "#/components/schemas/Materia"
-										}
-									],
-									"nullable": true
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "codigo",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/materias": {
-			"get": {
-				"operationId": "GetAllMaterias",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Materia"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": []
-			}
-		},
-		"/materias/semestres": {
-			"get": {
-				"operationId": "GetMateriasGroupBySemestre",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"items": {
-											"$ref": "#/components/schemas/Materia"
-										},
-										"type": "array"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": []
-			}
-		},
-		"/materias/semestres/{semestre}": {
-			"get": {
-				"operationId": "GetMateriasOfSemestre",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Materia"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "semestre",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/materias/add": {
-			"post": {
-				"operationId": "AddMateria",
-				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"security": [],
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/Materia"
-							}
-						}
-					}
-				}
-			}
-		},
 		"/materias/addpensum": {
 			"post": {
 				"operationId": "AddPensum",
@@ -430,28 +346,6 @@
 						}
 					}
 				}
-			}
-		},
-		"/materias/pensums": {
-			"get": {
-				"operationId": "GetPensumList",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/PensumInfo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": []
 			}
 		},
 		"/materias/deletepensum/{carrera}": {
@@ -503,60 +397,6 @@
 				]
 			}
 		},
-		"/divisist/test": {
-			"get": {
-				"operationId": "Test",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "ci_session",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/divisist/carrera": {
-			"get": {
-				"operationId": "GetCarreraInfo",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/CarreraInfo"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "ci_session",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
 		"/divisist/pensum": {
 			"get": {
 				"operationId": "GetPensum",
@@ -597,6 +437,35 @@
 						}
 					}
 				]
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"operationId": "Login",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccessTokenResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UserLoginRequest"
+							}
+						}
+					}
+				}
 			}
 		}
 	},

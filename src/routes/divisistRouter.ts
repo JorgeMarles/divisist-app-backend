@@ -1,6 +1,7 @@
+import { authenticateTokenMiddleware } from './../middleware/authMiddleware';
 import express, { Request } from "express";
 import DivisistController from "../controllers/divisistController";
-import ErrorResponse from "../util/errorResponse";
+import ErrorResponse, { ResponseStatus } from "../util/errorResponse";
 import { Pensum } from "../model/allmodels";
 import { CarreraInfo } from "../util/DivisistFetcher";
 
@@ -14,29 +15,13 @@ interface RequestDelay {
     delay?: number
 }
 
-router.get("/test", async (_req: Request<{}, any, {}, Request_ci_session>, res) => {
-    const controller = new DivisistController();
-    const response = await controller.test(_req.query.ci_session!.toString());
-    return res.send(response);
-});
-
-router.get("/carrera", async (_req: Request<{}, CarreraInfo | ErrorResponse, {}, Request_ci_session>, res) => {
+router.get("/pensum", authenticateTokenMiddleware, async (_req: Request<{}, Pensum | ErrorResponse, {}, Request_ci_session & RequestDelay>, res) => {
     const controller = new DivisistController();
     try {
-        const response = await controller.getCarreraInfo(_req.query.ci_session.toString());
-        return res.send(response);
-    } catch (error: any) {
-        return res.status(500).send({ error: error.toString() });
-    }
-});
-
-router.get("/pensum", async (_req: Request<{}, Pensum | ErrorResponse, {}, Request_ci_session & RequestDelay>, res) => {
-    const controller = new DivisistController();
-    try {
-        await controller.getPensum(_req.query.ci_session.toString());
+        await controller.getPensum(_req.query.ci_session.toString());        
         return res.send();
     } catch (error: any) {
-        return res.status(500).send({ error: error.toString() });
+        return res.status(ResponseStatus.INTERNAL_ERROR).send({ error: error.toString(), status: ResponseStatus.INTERNAL_ERROR });
     }
 });
 
